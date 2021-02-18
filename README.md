@@ -1,2 +1,2 @@
-# NoPixel-3.0-Dump
-Dump from 28.01.2021
+I wont share it loser go fuck yourself.
+Stop stalking me.
