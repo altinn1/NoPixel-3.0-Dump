@@ -1,0 +1,82 @@
+<html>
+
+<head>
+  <!-- Need to include jQuery! -->
+  <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+  <script>
+    var audioPlayer = null;
+    var loopedAudioPlayer = null;
+    const loopedSounds = new Map();
+    // Listen for NUI Messages.
+    window.addEventListener('message', function (event) {
+      // Check for playSound transaction
+
+      switch (event.data.transactionType) {
+        case "playSound":
+          if (audioPlayer != null) {
+            audioPlayer.pause();
+          }
+          audioPlayer = new Audio("./sounds/" + event.data.transactionFile + ".ogg");
+          audioPlayer.volume = event.data.transactionVolume;
+          audioPlayer.play();
+          break;
+        case "playLooped":{
+          if (loopedSounds.has(event.data.transactionFile)) return;
+
+          const player = new Audio("./sounds/" + event.data.transactionFile + ".ogg");
+
+          player.volume = event.data.transactionVolume;
+          player.play();
+          player.loop = true;
+
+          loopedSounds.set(event.data.transactionFile, player)
+          break;
+        }
+        case "stopLooped":{
+        if (!loopedSounds.has(event.data.transactionFile)) return;
+
+          const player = loopedSounds.get(event.data.transactionFile)
+
+          player.loop = false;
+          player.pause();          
+          
+          loopedSounds.delete(event.data.transactionFile)
+
+          break;
+        }
+        case "playSoundFlash":
+          if (audioPlayer != null) {
+            audioPlayer.pause();
+          }
+
+          audioPlayer = new Audio("./sounds/" + event.data.transactionFile + ".ogg");
+          audioPlayer.play();
+          audioPlayer.volume = event.data.transactionVolume;
+
+          var start = (event.data.transactionVolume * 100)
+          setTimeout(() => {
+            var vol = event.data.transactionVolume
+            var i = start;
+            var interval = setInterval(function () {
+              if (i > 0) {
+                if (vol <= 0.1) {
+                  vol = 0.1
+                }
+                else {
+                  vol -= 0.01
+                }
+                audioPlayer.volume = vol
+                i--;
+              }
+              else {
+                clearInterval(interval);
+              }
+            }, event.data.transactionTime);
+          }, event.data.transactionHold)
+          break;
+      }
+    });
+  </script>
+</head>
+
+</html>
